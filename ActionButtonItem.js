@@ -92,9 +92,8 @@ export default class ActionButtonItem extends Component {
     const parentStyle = isAndroid &&
       this.props.fixNativeFeedbackRadius
       ? {
-          height: size,
-          marginBottom: spacing,
-          right: this.props.offsetX,
+          paddingHorizontal: this.props.offsetX,
+          height: size + SHADOW_SPACE + spacing,
           borderRadius: this.props.size / 2
         }
       : {
@@ -106,7 +105,15 @@ export default class ActionButtonItem extends Component {
         pointerEvents="box-none"
         style={[animatedViewStyle, parentStyle]}
       >
-        <View>
+        <View
+          style={[{
+            width: this.props.size,
+            height: this.props.size,
+            borderRadius: size / 2
+          },
+          !hideShadow && isAndroid ? {...shadowStyle, ...this.props.shadowStyle} : null
+        ]}
+        >
           <Touchable
             testID={this.props.testID}
             accessibilityLabel={this.props.accessibilityLabel}
@@ -116,10 +123,11 @@ export default class ActionButtonItem extends Component {
             )}
             activeOpacity={this.props.activeOpacity || DEFAULT_ACTIVE_OPACITY}
             onPress={this.props.onPress}
+            style={[]}
           >
             <View style={[
               buttonStyle,
-              !hideShadow ? {...shadowStyle, ...this.props.shadowStyle} : null
+              !hideShadow && !isAndroid ? {...shadowStyle, ...this.props.shadowStyle} : null
             ]}>
               {this.props.children}
             </View>
@@ -178,8 +186,7 @@ export default class ActionButtonItem extends Component {
     return (
       <TextTouchable
         background={touchableBackground(
-          this.props.nativeFeedbackRippleColor,
-          this.props.fixNativeFeedbackRadius
+          this.props.nativeFeedbackRippleColor
         )}
         activeOpacity={this.props.activeOpacity || DEFAULT_ACTIVE_OPACITY}
         onPress={this.props.onPress}
