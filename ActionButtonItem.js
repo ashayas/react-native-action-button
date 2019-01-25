@@ -8,7 +8,6 @@ import {
   TouchableNativeFeedback,
   TouchableWithoutFeedback,
   Dimensions,
-  Platform
 } from "react-native";
 import {
   shadowStyle,
@@ -90,7 +89,7 @@ export default class ActionButtonItem extends Component {
 
     const Touchable = getTouchableComponent(this.props.useNativeFeedback);
 
-    const parentStyle = Platform.OS === "android" &&
+    const parentStyle = isAndroid &&
       this.props.fixNativeFeedbackRadius
       ? {
           height: size,
@@ -107,18 +106,10 @@ export default class ActionButtonItem extends Component {
         pointerEvents="box-none"
         style={[animatedViewStyle, parentStyle]}
       >
-        <View
-          style={[
-            {
-              width: this.props.size,
-              height: this.props.size,
-              borderRadius: size / 2
-            },
-            !hideShadow && shadowStyle,
-            !hideShadow && this.props.shadowStyle
-          ]}
-        >
+        <View>
           <Touchable
+            testID={this.props.testID}
+            accessibilityLabel={this.props.accessibilityLabel}
             background={touchableBackground(
               this.props.nativeFeedbackRippleColor,
               this.props.fixNativeFeedbackRadius
@@ -126,7 +117,10 @@ export default class ActionButtonItem extends Component {
             activeOpacity={this.props.activeOpacity || DEFAULT_ACTIVE_OPACITY}
             onPress={this.props.onPress}
           >
-            <View style={[buttonStyle]}>
+            <View style={[
+              buttonStyle,
+              !hideShadow ? {...shadowStyle, ...this.props.shadowStyle} : null
+            ]}>
               {this.props.children}
             </View>
           </Touchable>
@@ -168,6 +162,19 @@ export default class ActionButtonItem extends Component {
       textContainerStyle
     ];
 
+    const title = (
+      React.isValidElement(this.props.title) ?
+        this.props.title
+      : (
+        <Text
+          allowFontScaling={false}
+          style={[styles.text, this.props.textStyle]}
+        >
+          {this.props.title}
+        </Text>
+      )
+    )
+
     return (
       <TextTouchable
         background={touchableBackground(
@@ -178,12 +185,7 @@ export default class ActionButtonItem extends Component {
         onPress={this.props.onPress}
       >
         <View style={textStyles}>
-          <Text
-            allowFontScaling={false}
-            style={[styles.text, this.props.textStyle]}
-          >
-            {this.props.title}
-          </Text>
+          {title}
         </View>
       </TextTouchable>
     );

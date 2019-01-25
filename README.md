@@ -13,6 +13,15 @@ customizable multi-action-button component for react-native
 ```bash
 npm i react-native-action-button --save
 ```
+Link `react-native-vector-icons` native dependencies to your project with:
+```bash
+react-native link react-native-vector-icons
+```
+or just:
+```bash
+react-native link
+```
+to link all libraries with native dependencies in your project.
 
 ### Usage
 
@@ -89,6 +98,7 @@ Take a look at [this gist](https://gist.github.com/mmazzarolo/cfd467436f9d110e94
 ##### ActionButton:
 | Property      | Type          | Default             | Description |
 | ------------- |:-------------:|:------------:       | ----------- |
+| size          | number        | 56                  | use this to change the size of the Button
 | resetToken    | any           | null                | use this to reset the internal component state (expand/collapse) in a re-render cycle. Synchronize the component state.
 | active        | boolean       | false               | action buttons visible or not
 | autoInactive  | boolean       | true                | Auto hide ActionButtons when ActionButton.Item is pressed.
@@ -102,8 +112,11 @@ Take a look at [this gist](https://gist.github.com/mmazzarolo/cfd467436f9d110e94
 | btnOutRange   | string        | props.buttonColor   | button background color to animate to
 | outRangeScale | number        | 1                   | changes size of button during animation
 | onPress       | function      | null                | fires, when ActionButton is tapped
+| onPressIn     | function      | null                | fires, before ActionButton is released
+| onPressOut    | function      | null                | fires, after ActionButton is released
 | onLongPress   | function      | null                | fires, when ActionButton is long pressed
-| icon          | Component     | +                   | Custom component for ActionButton Icon
+| renderIcon    | function      | null                | Function to render the component for ActionButton Icon. It is passed a boolean, `active`, which is true if the FAB has been expanded, and false if it is collapsed, allowing you to show a different icon when the ActionButton Items are expanded.
+| icon          | Component     | +                   | **Deprecated, use `renderIcon`** Custom component for ActionButton Icon
 | backdrop      | Component     | false               | Custom component for use as Backdrop (i.e. [BlurView](https://github.com/react-native-fellowship/react-native-blur#blur-view), [VibrancyView](https://github.com/react-native-fellowship/react-native-blur#vibrancy-view))
 | degrees       | number        | 135                 | degrees to rotate icon
 | buttonText    | string        | +                   | use this to set a different text on the button
@@ -121,6 +134,7 @@ Take a look at [this gist](https://gist.github.com/mmazzarolo/cfd467436f9d110e94
 ##### ActionButton.Item:
 | Property      | Type          | Default             | Description |
 | ------------- |:-------------:|:------------:       | ----------- |
+| size          | number        | parentSize          | use this to change the size of the Button
 | title         | string        | undefined           | the title shown next to the button. When `undefined` the title is not hidden
 | onPress       | func          | null                | **required** function, triggers when a button is tapped
 | buttonColor   | string        | same as + button    | background color of the Button

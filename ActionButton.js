@@ -6,7 +6,6 @@ import {
   View,
   Animated,
   TouchableOpacity,
-  Platform
 } from "react-native";
 import ActionButtonItem from "./ActionButtonItem";
 import {
@@ -31,7 +30,12 @@ export default class ActionButton extends Component {
     this.timeout = null;
   }
 
+  componentDidMount() {
+    this.mounted = true;
+  }
+
   componentWillUnmount() {
+    this.mounted = false;
     clearTimeout(this.timeout);
   }
 
@@ -178,7 +182,7 @@ export default class ActionButton extends Component {
     };
 
     const Touchable = getTouchableComponent(this.props.useNativeFeedback);
-    const parentStyle = Platform.OS === "android" &&
+    const parentStyle = isAndroid &&
       this.props.fixNativeFeedbackRadius
       ? {
           right: this.props.offsetX,
@@ -186,7 +190,7 @@ export default class ActionButton extends Component {
           borderRadius: this.props.size / 2,
           width: this.props.size
         }
-      : { paddingHorizontal: this.props.offsetX, zIndex: this.props.zIndex };
+      : { marginHorizontal: this.props.offsetX, zIndex: this.props.zIndex };
 
     return (
       <View style={[
@@ -196,6 +200,9 @@ export default class ActionButton extends Component {
       ]}
       >
         <Touchable
+          testID={this.props.testID}
+          accessible={this.props.accessible}
+          accessibilityLabel={this.props.accessibilityLabel}
           background={touchableBackground(
             this.props.nativeFeedbackRippleColor,
             this.props.fixNativeFeedbackRadius
@@ -206,6 +213,8 @@ export default class ActionButton extends Component {
             this.props.onPress();
             if (this.props.children) this.animateButton();
           }}
+          onPressIn={this.props.onPressIn}
+          onPressOut={this.props.onPressOut}
         >
           <Animated.View
             style={wrapperStyle}
@@ -220,8 +229,12 @@ export default class ActionButton extends Component {
   }
 
   _renderButtonIcon() {
-    const { icon, btnOutRangeTxt, buttonTextStyle, buttonText } = this.props;
-    if (icon) return icon;
+    const { icon, renderIcon, btnOutRangeTxt, buttonTextStyle, buttonText } = this.props;
+    if (renderIcon) return renderIcon(this.state.active);
+    if (icon) {
+      console.warn('react-native-action-button: The `icon` prop is deprecated! Use `renderIcon` instead.');
+      return icon;
+    }
 
     const textColor = buttonTextStyle.color || "rgba(255,255,255,1)";
 
@@ -248,7 +261,9 @@ export default class ActionButton extends Component {
 
     if (!this.state.active) return null;
 
-    const actionButtons = !Array.isArray(children) ? [children] : children;
+    let actionButtons = !Array.isArray(children) ? [children] : children;
+
+    actionButtons = actionButtons.filter( actionButton => (typeof actionButton == 'object') )
 
     const actionStyle = {
       flex: 1,
@@ -318,10 +333,11 @@ export default class ActionButton extends Component {
       this.anim.setValue(0);
     }
 
-    setTimeout(
-      () => this.setState({ active: false, resetToken: this.state.resetToken }),
-      250
-    );
+    setTimeout(() => {
+      if (this.mounted) {
+        this.setState({ active: false, resetToken: this.state.resetToken });  
+      }
+    }, 250);
   }
 }
 
@@ -342,6 +358,8 @@ ActionButton.propTypes = {
     PropTypes.number
   ]),
 
+  renderIcon: PropTypes.func,
+
   bgColor: PropTypes.string,
   bgOpacity: PropTypes.number,
   buttonColor: PropTypes.string,
@@ -354,6 +372,8 @@ ActionButton.propTypes = {
   size: PropTypes.number,
   autoInactive: PropTypes.bool,
   onPress: PropTypes.func,
+  onPressIn: PropTypes.func,
+  onPressOut: PropTypes.func,
   backdrop: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
   degrees: PropTypes.number,
   verticalOrientation: PropTypes.oneOf(["up", "down"]),
@@ -362,7 +382,11 @@ ActionButton.propTypes = {
 
   useNativeFeedback: PropTypes.bool,
   fixNativeFeedbackRadius: PropTypes.bool,
-  nativeFeedbackRippleColor: PropTypes.string
+  nativeFeedbackRippleColor: PropTypes.string,
+
+  testID: PropTypes.string,
+  accessibilityLabel: PropTypes.string,
+  accessible: PropTypes.bool
 };
 
 ActionButton.defaultProps = {
@@ -377,6 +401,8 @@ ActionButton.defaultProps = {
   outRangeScale: 1,
   autoInactive: true,
   onPress: () => {},
+  onPressIn: () => {},
+  onPressOn: () => {},
   backdrop: false,
   degrees: 45,
   position: "right",
@@ -388,7 +414,10 @@ ActionButton.defaultProps = {
   useNativeFeedback: true,
   activeOpacity: DEFAULT_ACTIVE_OPACITY,
   fixNativeFeedbackRadius: false,
-  nativeFeedbackRippleColor: "rgba(255,255,255,0.75)"
+  nativeFeedbackRippleColor: "rgba(255,255,255,0.75)",
+  testID: undefined,
+  accessibilityLabel: undefined,
+  accessible: undefined
 };
 
 const styles = StyleSheet.create({
